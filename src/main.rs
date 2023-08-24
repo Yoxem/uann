@@ -1,17 +1,20 @@
-///
-/// convert a string to 
-/// a vector of Unicode Grapheme Segment in `&str`.
+/// (c) 2023 Tan Kian-ting <yoxem@kianting.info> 
+/// Under MIT License
+/// 习包子 梁家河小学博士 清零宗 习炀帝 庆丰大帝
+/// 独裁国贼 新疆集中营 光复香港时代革命 祈翠 南蒙古独立 香港独立
 /// 
-///  * s : input `String`'s reference
+
+///
+/// pairs of string for matching and parsing
 /// 
-/// ## Example :
-/// ```
-/// let example = "我m̄知 it".to_string();
-/// let example_to_segment = segmemt_unicode_string(&example);
-/// assert_eq!(example_to_segment, vec!["我", "m\u{304}", "知", " ", "i", "t"]);
-/// ```
-///
-///
+/// - `matched` : the string being accumulatedly matched.
+/// - `remained` : the string to be matched
+#[derive(Debug, Clone)]
+pub struct Matchee {
+    matched : String,
+    remained : String,
+}
+
 /// macro convert a str as a string, equivalent to `x.to_string()`.
 /// 
 /// # Example:
@@ -40,19 +43,6 @@ macro_rules! string {
 fn str_to_char_vec (s : &str) -> Vec<char>{
     return s.chars().collect();
 }
-
-///
-/// pairs of string for matching and parsing
-/// 
-/// - `matched` : the string being accumulatedly matched.
-/// - `remained` : the string to be matched
-#[derive(Debug, Clone)]
-pub struct Matchee {
-    matched : String,
-    remained : String,
-}
-
-
 
 /// return a closure such that
 /// if the 1st char of `Matchee.matched` matches `ch`,
