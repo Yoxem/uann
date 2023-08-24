@@ -100,6 +100,8 @@ fn then_do(inputee : Option<Matchee>, closure : &dyn Fn(Matchee) -> Option<Match
         }
     }
 
+/// return a combined closure. if `closure1` is not passed, then 
+/// use `closure2`, i.e. : `(closure1 || closure2)`
 fn or_do(
     closure1 : Box<dyn Fn(Matchee) -> Option<Matchee>>,
     closure2 : Box<dyn Fn(Matchee) -> Option<Matchee>>) -> 
