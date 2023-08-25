@@ -27,6 +27,9 @@ macro_rules! string {
     ($name:expr) => {$name.to_string()}
 }
 
+
+/// then!(a, b [, c...]*) i similar to
+/// a ==> b ((==> c)...)*
 macro_rules! then{
 
     ($item: expr, $closure1: expr, $($closure2: expr),+)=>{
