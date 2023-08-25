@@ -9,7 +9,7 @@
 /// 
 /// - `matched` : the string being accumulatedly matched.
 /// - `remained` : the string to be matched
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Matchee {
     matched : String,
     remained : String,
@@ -25,6 +25,16 @@ pub struct Matchee {
 ///
 macro_rules! string {
     ($name:expr) => {$name.to_string()}
+}
+
+macro_rules! then{
+
+    ($item: expr, $closure1: expr, $($closure2: expr),+)=>{
+        then!(then_do($item, &$closure1), $($closure2),+);
+    };
+    ($item: expr, $closure1: expr)=>{
+        then_do($item, &$closure1);
+    };
 }
 
 
@@ -47,7 +57,7 @@ fn str_to_char_vec (s : &str) -> Vec<char>{
 /// return a closure such that
 /// if the 1st char of `Matchee.matched` matches `ch`,
 /// then return the new `Some<Matchee>`. Otherwise, it returns `None`.
-fn match_one_char(ch : char) -> Box<dyn Fn(Matchee) -> Option<Matchee>>{
+fn match_1_char(ch : char) -> Box<dyn Fn(Matchee) -> Option<Matchee>>{
     return match_range(ch, ch)
 }
 
@@ -62,6 +72,10 @@ fn match_range(lower_ch : char, upper_ch: char) ->
     Box::new(move | x : Matchee| -> Option<Matchee> {
         let x_remained_str = x.remained.as_str();
         let x_remained_char_vec = str_to_char_vec(x_remained_str);
+
+        if x_remained_char_vec.len() == 0{
+            return None;
+        }
 
         if (x_remained_char_vec[0] as u32) >= (lower_ch as u32) && 
         (x_remained_char_vec[0] as u32) <= (upper_ch as u32){
@@ -89,6 +103,22 @@ fn then_do(inputee : Option<Matchee>, closure : &dyn Fn(Matchee) -> Option<Match
             None => inputee,
         }
     }
+/// return a closure for what is do 0+ times
+/// similar to `( closure )*`
+fn zero_plus_times_do(closure : &dyn Fn(Matchee) -> Option<Matchee>) ->
+Box<dyn Fn(Matchee) -> Option<Matchee> + '_>{
+    return Box::new(
+        move |inputee|{
+            let mut old_inputee = inputee.clone();
+            let mut new_inputee = closure(old_inputee.clone());
+        while let Some(new_inner) = new_inputee
+        {
+            old_inputee = new_inner.clone();
+            new_inputee = closure(new_inner);
+        }
+        return Some(old_inputee.clone());
+    });
+}
 
 /// return a combined closure. if `closure1` is not passed, then 
 /// use `closure2`, i.e. : `(closure1 || closure2)`
@@ -118,16 +148,24 @@ fn main() {
 
     println!("{:?}", (ex1.clone()));
     println!("{:?}", match_range('2', '9')(ex1.clone()));
-    println!("{:?}", match_one_char('0')(ex1.clone()));
-    println!("{:?}", match_one_char('1')(ex1.clone()));
+    println!("{:?}", match_1_char('0')(ex1.clone()));
+    println!("{:?}", match_1_char('1')(ex1.clone()));
 
     let ex2 = Matchee{
         matched : string!(""),
-        remained : string!("012")};
+        remained : string!("1234")};
         println!("~~~{:?}",
-        then_do(then_do(Some(ex2.clone()), &or_do(match_one_char('1'),
-            match_one_char('0'))),&d));
+        then_do(then_do(Some(ex2.clone()), &or_do(match_1_char('1'),
+            match_1_char('0'))),&d));
 
+        println!("~~~{:?}",
+            then_do(Some(ex2.clone()),&zero_plus_times_do(&d)));
+
+        println!("~~~{:?}",
+            then!(Some(ex2.clone()),&zero_plus_times_do(&d)));
+        
+        println!("~~~{:?}",
+            then!(Some(ex2.clone()), &d, &d, &d));
 
 
 }
